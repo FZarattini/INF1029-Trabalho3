@@ -134,6 +134,8 @@ int main(void){
     cudaError = cudaMemcpy(d_b, h_b, DimB_M * DimB_N * sizeof(float), cudaMemcpyHostToDevice);
 
     cudaError = cudaMemcpy(d_c, h_c, DimA_M * DimB_N * sizeof(float), cudaMemcpyHostToDevice);
+
+    
     
 
     return 1;
