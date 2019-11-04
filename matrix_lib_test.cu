@@ -136,6 +136,8 @@ int main(void){
     cudaError = cudaMemcpy(d_c, h_c, DimA_M * DimB_N * sizeof(float), cudaMemcpyHostToDevice);
 
     scalar_matrix_mult(scalar_value, &matrixA);
+
+    matrix_matrix_mult(&matrixA, &matrixB, &matrixC);
     
 
     return 1;
