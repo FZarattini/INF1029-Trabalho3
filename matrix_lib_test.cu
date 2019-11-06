@@ -13,14 +13,14 @@ int print_matrix(struct matrix *matrix) {
   N = matrix->height * matrix->width;
 
   /* Check the integrity of the matrix */
-  if (N == 0 || matrix->rows == NULL) return 0;
+  //if (N == 0 || matrix->rows == NULL) return 0;
 
   /* Initialize new line controol */
   nxt_newLine = matrix->width - 1;
 
   /* Print matrix elements */
   for (i = 0; i < N; i++) {
-     printf("%5.1f ", matrix->rows[i]);
+     printf("%5.1f ", matrix->h_rows[i]);
      if (i == nxt_newLine) {
     printf("\n");
     nxt_newLine += matrix->width;
@@ -39,7 +39,7 @@ int load_matrix(struct matrix *matrix, char *filename) {
         N = matrix->height * matrix->width;
 
         /* Check the integrity of the matrix */
-        if (N == 0 || matrix->rows == NULL) return 0;
+        //if (N == 0 || matrix->rows == NULL) return 0;
 
         /* Try to open file of floats */
         if ((fd = fopen(filename, "rb")) == NULL) {
@@ -64,8 +64,9 @@ int load_matrix(struct matrix *matrix, char *filename) {
         return 1;
 }
 
-int main(void){
+int main(int argc, char *argv[]){
     unsigned long int DimA_M, DimA_N, DimB_M, DimB_N;
+    float scalar_value;
     char *matrixA_filename, *matrixB_filename, *result1_filename, *result2_filename;
     char *eptr = NULL;
     cudaError_t cudaError;
@@ -90,23 +91,6 @@ int main(void){
     matrixB_filename = argv[7];
     result1_filename = argv[8];
     result2_filename = argv[9];
-
-    if ((scalar_value == 0.0f) || (DimA_M == 0) || (DimA_N == 0) || (DimB_M == 0) || (DimB_N == 0)) {
-            printf("%s: erro na conversao do argumento: errno = %d\n", argv[0], errno);
-
-            /* If a conversion error occurred, display a message and exit */
-            if (errno == EINVAL)
-            {
-                printf("Conversion error occurred: %d\n", errno);
-                return 1;
-            }
-
-            /* If the value provided was out of range, display a warning message */
-            if (errno == ERANGE) {
-                printf("The value provided was out of rangei: %d\n", errno);
-                return 1;
-        }
-    }
 
     /* Allocate the arrays of the four matrixes */
     float *a=  (float*)aligned_alloc(32, DimA_M*DimA_N*sizeof(float));
@@ -164,9 +148,13 @@ int main(void){
 
     scalar_matrix_mult(scalar_value, &matrixA);
 
-    //matrix_matrix_mult(&matrixA, &matrixB, &matrixC);
-    
+    cudaError = cudaMemcpy(h_a, d_a, DimA_M * DimA_N * sizeof(float), cudaMemcpyDeviceToHost);
+
+    printf("Resultado da Scalar Mult!\n");
     print_matrix(&matrixA);
+
+    //matrix_matrix_mult(&matrixA, &matrixB, &matrixC);
+    printf("Resultado da Matrix Mult!\n");
 
     return 1;
 }
