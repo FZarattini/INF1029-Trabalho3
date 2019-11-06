@@ -1,7 +1,34 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "matrix_lib.h"
 
 struct matrix matrixA, matrixB, matrixC;
+
+int print_matrix(struct matrix *matrix) {
+  unsigned long int i;
+  unsigned long int N;
+  unsigned long int nxt_newLine;
+
+  /* Check the numbers of the elements of the matrix */
+  N = matrix->height * matrix->width;
+
+  /* Check the integrity of the matrix */
+  if (N == 0 || matrix->rows == NULL) return 0;
+
+  /* Initialize new line controol */
+  nxt_newLine = matrix->width - 1;
+
+  /* Print matrix elements */
+  for (i = 0; i < N; i++) {
+     printf("%5.1f ", matrix->rows[i]);
+     if (i == nxt_newLine) {
+    printf("\n");
+    nxt_newLine += matrix->width;
+     }
+  }
+
+  return 1;
+}
 
 int load_matrix(struct matrix *matrix, char *filename) {
         unsigned long int i = 0;
@@ -137,8 +164,9 @@ int main(void){
 
     scalar_matrix_mult(scalar_value, &matrixA);
 
-    matrix_matrix_mult(&matrixA, &matrixB, &matrixC);
+    //matrix_matrix_mult(&matrixA, &matrixB, &matrixC);
     
+    print_matrix(&matrixA);
 
     return 1;
 }
