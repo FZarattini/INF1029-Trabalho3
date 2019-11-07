@@ -153,9 +153,11 @@ int main(int argc, char *argv[]){
     printf("Resultado da Scalar Mult!\n");
     print_matrix(&matrixA);
 
-    matrix_matrix_mult(&matrixA, &matrixB, &matrixC);
+    cudaError = cudaMemcpy(d_a, h_a, DimA_M * DimA_N * sizeof(float), cudaMemcpyHostToDevice);
 
-    cudaError = cudaMemcpy(h_c, d_c, DimA_M * DimA_N * sizeof(float), cudaMemcpyDeviceToHost);
+    matrix_matrix_mult(&matrixA, &matrixB, &matrixC);
+     
+    cudaError = cudaMemcpy(h_c, d_c, DimA_M * DimB_N * sizeof(float), cudaMemcpyDeviceToHost);
 
     printf("Resultado da Matrix Mult!\n");
 

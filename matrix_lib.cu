@@ -18,17 +18,19 @@ void scalar_mult(int n, float *d_x, float scalar_value){
 }
 
 __global__
-void matrix_mult(matrix* matrixA, matrix* matrixB, matrix* matrixC){
+void matrix_mult(int hA, int wA, int hB, int wB, float * d_a, float * d_b, float * d_c){
 	int i, j, k, index, passo;
-    index = blockIdx.x * blockDim.x + theadIdx.x;
+    int initialJ = 0;
+    int line = 1;
+    index = blockIdx.x * blockDim.x + threadIdx.x;
     passo = gridDim.x * blockDim.x;
 
-    for(i = 0; i < matrixC->height * matrixC->width; i += passo){
-    	for(j = 0; j < matrixA->height * matrixA->width; j++){
-    		for(k = j / matrixA->width; k < matrixB->height * matrixB->width; k += matrixB->width){
-    			matrixC->d_rows[i] = matrixC->d_rows[i] + (matrixA->d_rows[j] * matrixB->d_rows[k]);
-    		}
-    	}
+    for( k = index; k < hA*wB; k+= passo){
+        for(i = (line-1)*wA; i < line*wA; i++){
+            for(j = line - 1; j < wB; j += wB)
+                d_c[k] += d_a[i] * d_b[j];
+        }
+        line++;
     }
 }
 
@@ -54,13 +56,18 @@ int matrix_matrix_mult(struct matrix *matrixA, struct matrix *matrixB, struct ma
     
     int qtdBlocks;
 
+    int hA = matrixA->height;
+    int wA = matrixA->width;
+    int hB = matrixB->height;
+    int wB = matrixB->width;
+
     if(matrixA == NULL || matrixB == NULL || matrixC == NULL){
     	return 0;
     }
 
     qtdBlocks = (matrixC->height * matrixC->width + THREAD_QTD - 1) / THREAD_QTD;
 
-    matrix_mul<<<qtdBlocks, THREAD_QTD>>>(matrixA, matrixB, matrixC);
+    matrix_mult<<<qtdBlocks, THREAD_QTD>>>(hA, wA, hB, wB, matrixA->d_rows, matrixB->d_rows, matrixC->d_rows);
     
     return 1;
 }
