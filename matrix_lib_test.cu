@@ -116,8 +116,25 @@ int main(int argc, char *argv[]){
     float *d_c;
 
     cudaError = cudaMalloc(&d_a, DimA_M * DimA_N * sizeof(float));
+
+    if (cudaError != cudaSuccess) {
+        printf("cudaMalloc (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
+            return 1;
+    }
+
     cudaError = cudaMalloc(&d_b, DimB_M * DimB_N * sizeof(float));
+
+    if (cudaError != cudaSuccess) {
+        printf("cudaMalloc (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
+            return 1;
+    }
+
     cudaError = cudaMalloc(&d_c, DimA_M * DimB_N * sizeof(float));
+
+    if (cudaError != cudaSuccess) {
+        printf("cudaMalloc (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
+            return 1;
+    }
 
     matrixA.height = DimA_M;
     matrixA.width = DimA_N;
@@ -146,13 +163,33 @@ int main(int argc, char *argv[]){
 
     cudaError = cudaMemcpy(d_a, h_a, DimA_M * DimA_N * sizeof(float), cudaMemcpyHostToDevice);
 
+    if (cudaError != cudaSuccess) {
+        printf("cudaMemcpy (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
+            return 1;
+    }
+
     cudaError = cudaMemcpy(d_b, h_b, DimB_M * DimB_N * sizeof(float), cudaMemcpyHostToDevice);
 
+    if (cudaError != cudaSuccess) {
+        printf("cudaMemcpy (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
+            return 1;
+    }
+
     cudaError = cudaMemcpy(d_c, h_c, DimA_M * DimB_N * sizeof(float), cudaMemcpyHostToDevice);
+
+    if (cudaError != cudaSuccess) {
+        printf("cudaMemcpy (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
+            return 1;
+    }
 
     scalar_matrix_mult(scalar_value, &matrixA);
 
     cudaError = cudaMemcpy(h_a, d_a, DimA_M * DimA_N * sizeof(float), cudaMemcpyDeviceToHost);
+
+    if (cudaError != cudaSuccess) {
+        printf("cudaMemcpy (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
+            return 1;
+    }
 
     printf("Resultado da Scalar Mult!\n");
     print_matrix(&matrixA);
@@ -165,9 +202,19 @@ int main(int argc, char *argv[]){
 
     cudaError = cudaMemcpy(d_a, h_a, DimA_M * DimA_N * sizeof(float), cudaMemcpyHostToDevice);
 
+    if (cudaError != cudaSuccess) {
+        printf("cudaMemcpy (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
+            return 1;
+    }
+
     matrix_matrix_mult(&matrixA, &matrixB, &matrixC);
      
     cudaError = cudaMemcpy(h_c, d_c, DimA_M * DimB_N * sizeof(float), cudaMemcpyDeviceToHost);
+
+    if (cudaError != cudaSuccess) {
+        printf("cudaMemcpy (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
+            return 1;
+    }
 
     printf("Resultado da Matrix Mult!\n");
 
