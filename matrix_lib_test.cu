@@ -65,21 +65,23 @@ int load_matrix(struct matrix *matrix, char *filename) {
 }
 
 int main(int argc, char *argv[]){
+    int i;
     unsigned long int DimA_M, DimA_N, DimB_M, DimB_N;
     float scalar_value;
+    float * ptr;
     char *matrixA_filename, *matrixB_filename, *result1_filename, *result2_filename;
     char *eptr = NULL;
     cudaError_t cudaError;
 
     // Check arguments
-    if (argc != 10) {
+    /*if (argc != 10) {
             printf("Usage: %s <scalar_value> <DimA_M> <DimA_N> <DimB_M> <DimB_N> <matrixA_filename> <matrixB_filename> <result1_filename> <result2_filename>\n", argv[0]);
             return 0;
     } else {
-            //printf("Number of args: %d\n", argc);
-            //for (int i=0; i<argc; ++i)
-            //       printf("argv[%d] = %s\n", i, argv[i]);
-    }
+            printf("Number of args: %d\n", argc);
+            for (int i=0; i<argc; ++i)
+                   printf("argv[%d] = %s\n", i, argv[i]);
+    }*/
 
     // Convert arguments
     scalar_value = strtof(argv[1], NULL);
@@ -91,6 +93,9 @@ int main(int argc, char *argv[]){
     matrixB_filename = argv[7];
     result1_filename = argv[8];
     result2_filename = argv[9];
+
+    FILE* result1 = fopen(result1_filename, "wb");
+    FILE* result2 = fopen(result2_filename, "wb");
 
     /* Allocate the arrays of the four matrixes */
     float *a=  (float*)aligned_alloc(32, DimA_M*DimA_N*sizeof(float));
@@ -112,8 +117,25 @@ int main(int argc, char *argv[]){
     float *d_c;
 
     cudaError = cudaMalloc(&d_a, DimA_M * DimA_N * sizeof(float));
+
+    if (cudaError != cudaSuccess) {
+	    printf("cudaMalloc d_y returned error %s (code %d)\n", cudaGetErrorString(cudaError), cudaError);
+        return 1;
+    }
+
     cudaError = cudaMalloc(&d_b, DimB_M * DimB_N * sizeof(float));
+    
+    if (cudaError != cudaSuccess) {
+	    printf("cudaMalloc d_y returned error %s (code %d)\n", cudaGetErrorString(cudaError), cudaError);
+        return 1;
+    }
+    
     cudaError = cudaMalloc(&d_c, DimA_M * DimB_N * sizeof(float));
+
+    if (cudaError != cudaSuccess) {
+	    printf("cudaMalloc d_y returned error %s (code %d)\n", cudaGetErrorString(cudaError), cudaError);
+        return 1;
+    }
 
     matrixA.height = DimA_M;
     matrixA.width = DimA_N;
@@ -142,9 +164,24 @@ int main(int argc, char *argv[]){
 
     cudaError = cudaMemcpy(d_a, h_a, DimA_M * DimA_N * sizeof(float), cudaMemcpyHostToDevice);
 
+    if (cudaError != cudaSuccess) {
+	    printf("cudaMemcpy d_y returned error %s (code %d)\n", cudaGetErrorString(cudaError), cudaError);
+        return 1;
+    }
+
     cudaError = cudaMemcpy(d_b, h_b, DimB_M * DimB_N * sizeof(float), cudaMemcpyHostToDevice);
 
+    if (cudaError != cudaSuccess) {
+	    printf("cudaMemcpy d_y returned error %s (code %d)\n", cudaGetErrorString(cudaError), cudaError);
+        return 1;
+    }
+
     cudaError = cudaMemcpy(d_c, h_c, DimA_M * DimB_N * sizeof(float), cudaMemcpyHostToDevice);
+
+    if (cudaError != cudaSuccess) {
+	    printf("cudaMemcpy d_y returned error %s (code %d)\n", cudaGetErrorString(cudaError), cudaError);
+        return 1;
+    }
 
     scalar_matrix_mult(scalar_value, &matrixA);
 
@@ -153,15 +190,41 @@ int main(int argc, char *argv[]){
     printf("Resultado da Scalar Mult!\n");
     print_matrix(&matrixA);
 
+    ptr = matrixA.h_rows;
+    i = 0;
+    while( i < (DimA_M * DimA_N)){
+        fwrite(ptr, sizeof(float), 1, result1);
+        ptr++;
+        i++;
+    }
+
     cudaError = cudaMemcpy(d_a, h_a, DimA_M * DimA_N * sizeof(float), cudaMemcpyHostToDevice);
+
+    if (cudaError != cudaSuccess) {
+	    printf("cudaMemcpy d_y returned error %s (code %d)\n", cudaGetErrorString(cudaError), cudaError);
+        return 1;
+    }
 
     matrix_matrix_mult(&matrixA, &matrixB, &matrixC);
      
     cudaError = cudaMemcpy(h_c, d_c, DimA_M * DimB_N * sizeof(float), cudaMemcpyDeviceToHost);
 
+    if (cudaError != cudaSuccess) {
+	    printf("cudaMemcpy d_y returned error %s (code %d)\n", cudaGetErrorString(cudaError), cudaError);
+        return 1;
+    }
+
     printf("Resultado da Matrix Mult!\n");
 
     print_matrix(&matrixC);
+
+    ptr = matrixC.h_rows;
+    i = 0;
+    while( i < (DimA_M * DimB_N)){
+        fwrite(ptr, sizeof(float), 1, result2);
+        ptr++;
+        i++;
+    }
     
     return 1;
 }
