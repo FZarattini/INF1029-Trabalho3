@@ -74,14 +74,14 @@ int main(int argc, char *argv[]){
     cudaError_t cudaError;
 
     // Check arguments
-    /*if (argc != 10) {
+    if (argc != 10) {
             printf("Usage: %s <scalar_value> <DimA_M> <DimA_N> <DimB_M> <DimB_N> <matrixA_filename> <matrixB_filename> <result1_filename> <result2_filename>\n", argv[0]);
             return 0;
     } else {
             printf("Number of args: %d\n", argc);
             for (int i=0; i<argc; ++i)
                    printf("argv[%d] = %s\n", i, argv[i]);
-    }*/
+    }
 
     // Convert arguments
     scalar_value = strtof(argv[1], NULL);
