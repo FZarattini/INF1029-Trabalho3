@@ -70,7 +70,6 @@ int main(int argc, char *argv[]){
     char *matrixA_filename, *matrixB_filename, *result1_filename, *result2_filename;
     char *eptr = NULL;
     cudaError_t cudaError;
-    int i;
 
     // Check arguments
     if (argc != 10) {
@@ -93,9 +92,6 @@ int main(int argc, char *argv[]){
     result1_filename = argv[8];
     result2_filename = argv[9];
 
-    FILE* result1 = fopen(result1_filename, "wb");
-    FILE* result2 = fopen(result2_filename, "wb");
-
     /* Allocate the arrays of the four matrixes */
     float *a=  (float*)aligned_alloc(32, DimA_M*DimA_N*sizeof(float));
     float *b = (float*)aligned_alloc(32, DimB_M*DimB_N*sizeof(float));
@@ -116,25 +112,8 @@ int main(int argc, char *argv[]){
     float *d_c;
 
     cudaError = cudaMalloc(&d_a, DimA_M * DimA_N * sizeof(float));
-
-    if (cudaError != cudaSuccess) {
-        printf("cudaMalloc (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
-            return 1;
-    }
-
     cudaError = cudaMalloc(&d_b, DimB_M * DimB_N * sizeof(float));
-
-    if (cudaError != cudaSuccess) {
-        printf("cudaMalloc (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
-            return 1;
-    }
-
     cudaError = cudaMalloc(&d_c, DimA_M * DimB_N * sizeof(float));
-
-    if (cudaError != cudaSuccess) {
-        printf("cudaMalloc (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
-            return 1;
-    }
 
     matrixA.height = DimA_M;
     matrixA.width = DimA_N;
@@ -163,68 +142,26 @@ int main(int argc, char *argv[]){
 
     cudaError = cudaMemcpy(d_a, h_a, DimA_M * DimA_N * sizeof(float), cudaMemcpyHostToDevice);
 
-    if (cudaError != cudaSuccess) {
-        printf("cudaMemcpy (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
-            return 1;
-    }
-
     cudaError = cudaMemcpy(d_b, h_b, DimB_M * DimB_N * sizeof(float), cudaMemcpyHostToDevice);
 
-    if (cudaError != cudaSuccess) {
-        printf("cudaMemcpy (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
-            return 1;
-    }
-
     cudaError = cudaMemcpy(d_c, h_c, DimA_M * DimB_N * sizeof(float), cudaMemcpyHostToDevice);
-
-    if (cudaError != cudaSuccess) {
-        printf("cudaMemcpy (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
-            return 1;
-    }
 
     scalar_matrix_mult(scalar_value, &matrixA);
 
     cudaError = cudaMemcpy(h_a, d_a, DimA_M * DimA_N * sizeof(float), cudaMemcpyDeviceToHost);
 
-    if (cudaError != cudaSuccess) {
-        printf("cudaMemcpy (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
-            return 1;
-    }
-
     printf("Resultado da Scalar Mult!\n");
     print_matrix(&matrixA);
 
-    i = 0
-    while( i < DimA_M * DimA_N){
-        fwrite(matrixA->rows[i], sizeof(float), 1, result1);
-        i++;
-    }
-
     cudaError = cudaMemcpy(d_a, h_a, DimA_M * DimA_N * sizeof(float), cudaMemcpyHostToDevice);
-
-    if (cudaError != cudaSuccess) {
-        printf("cudaMemcpy (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
-            return 1;
-    }
 
     matrix_matrix_mult(&matrixA, &matrixB, &matrixC);
      
     cudaError = cudaMemcpy(h_c, d_c, DimA_M * DimB_N * sizeof(float), cudaMemcpyDeviceToHost);
 
-    if (cudaError != cudaSuccess) {
-        printf("cudaMemcpy (h_x -> d_x) returned error %s (code %d), line(%d)\n", cudaGetErrorString(cudaError), cudaError, __LINE__);
-            return 1;
-    }
-
     printf("Resultado da Matrix Mult!\n");
 
     print_matrix(&matrixC);
-
-    i = 0
-    while( i < DimA_M * DimB_N){
-        fwrite(matrixC->rows[i], sizeof(float), 1, result2);
-        i++;
-    }
     
     return 1;
 }
