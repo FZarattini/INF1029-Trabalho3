@@ -226,5 +226,16 @@ int main(int argc, char *argv[]){
         i++;
     }
     
+    cudaFree(d_a);
+    cudaFree(d_b);
+    cudaFree(d_c);
+    free(h_a);
+    free(h_b);
+    free(h_c);
+
+    fclose(result1);
+    fclose(result2);
+
+
     return 1;
 }
