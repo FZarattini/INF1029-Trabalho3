@@ -30,7 +30,7 @@ void matrix_mult(int hA, int wA, int hB, int wB, float * d_a, float * d_b, float
 
     for(k = index; k < hA*wB; k+= passo)
     {
-        for(i = line*wA, j = column*hB ; i < line*wA+wA; i++, j++)
+        for(i = line*wA, j = column%hB ; i < line*wA+wA; i++, j++)
         {
             d_c[k] += d_a[i] * d_b[j];
         }
