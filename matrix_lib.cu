@@ -20,19 +20,22 @@ void scalar_mult(int n, float *d_x, float scalar_value){
 __global__
 void matrix_mult(int hA, int wA, int hB, int wB, float * d_a, float * d_b, float * d_c){
 	int i, j, k, index, passo;
-    int line = 1;
+    //int line = 1;
+    int line, column;
     index = blockIdx.x * blockDim.x + threadIdx.x;
     passo = gridDim.x * blockDim.x;
 
-    for( k = index; k < hA*wB; k+= passo){
-        for(i = (line-1)*wA; i < line*wA; i++){
-            for(j = line - 1; j < wB; j += wB)
-                d_c[k] += d_a[i] * d_b[j];
+    line = index/hA;
+    column = index % hA;
+
+    for(k = index; k < hA*wB; k+= passo)
+    {
+        for(i = line*wA, j = column*hB ; i < line*wA+wA; i++, j++)
+        {
+            d_c[k] += d_a[i] * d_b[j];
         }
-        line++;
     }
 }
-
 int scalar_matrix_mult(float scalar_value, struct matrix *matrix){
 
     int qtdBlocks;
