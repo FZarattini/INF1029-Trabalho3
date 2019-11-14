@@ -19,8 +19,7 @@ void scalar_mult(int n, float *d_x, float scalar_value){
 
 __global__
 void matrix_mult(int hA, int wA, int hB, int wB, float * d_a, float * d_b, float * d_c){
-    int i, j, k, index, passo;
-    int line, column;
+    int i, j, index, passo;
     index = blockIdx.x * blockDim.x + threadIdx.x;
     passo = gridDim.x * blockDim.x;
 
