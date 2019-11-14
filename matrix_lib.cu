@@ -19,23 +19,21 @@ void scalar_mult(int n, float *d_x, float scalar_value){
 
 __global__
 void matrix_mult(int hA, int wA, int hB, int wB, float * d_a, float * d_b, float * d_c){
-	int i, j, k, index, passo;
-    //int line = 1;
+    int i, j, k, index, passo;
     int line, column;
     index = blockIdx.x * blockDim.x + threadIdx.x;
     passo = gridDim.x * blockDim.x;
 
-    line = index/hA;
-    column = index % hA;
-
-    for(k = index; k < hA*wB; k+= passo)
+    for(i = index; i< hA*wB; i+= passo)
     {
-        for(i = line*wA, j = column%hB ; i < line*wA+wA; i++, j++)
-        {
-            d_c[k] += d_a[i] * d_b[j];
-        }
+    	d_c[i] = 0;
+	for(j = 0; j< wA; j++)
+	{
+		d_c[i] += d_a[wA*(i/hA) + j] * d_b[(i%hA) + j*wB];
+	}
     }
 }
+
 int scalar_matrix_mult(float scalar_value, struct matrix *matrix){
 
     int qtdBlocks;
@@ -64,6 +62,11 @@ int matrix_matrix_mult(struct matrix *matrixA, struct matrix *matrixB, struct ma
     int wB = matrixB->width;
 
     if(matrixA == NULL || matrixB == NULL || matrixC == NULL){
+    	return 0;
+    }
+    
+    if(wA != hB)
+    {
     	return 0;
     }
 
